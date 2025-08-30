@@ -18,7 +18,7 @@ export default function ContactPage() {
             <input type="email" className="form-control" required />
           </div>
           <div className="mb-3">
-            <label className="form-label">Message</label>
+            <label className="form-label">Message for us</label>
             <textarea className="form-control" rows={4} required />
           </div>
           <button type="submit" className="btn btn-primary">Send</button>

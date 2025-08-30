@@ -13,6 +13,7 @@ export default function Navbar() {
           <li className="nav-item"><Link href="/products" className="nav-link">Products</Link></li>
           <li className="nav-item"><Link href="/cart" className="nav-link">Cart 🛒 ({cart.length})</Link></li>
           <li className="nav-item"><Link href="/about" className="nav-link">About</Link></li>
+          <li className="nav-item"><Link href="/contact" className="nav-link">Contact us</Link></li>
         </ul>
       </div>
     </nav>

@@ -61,19 +61,20 @@ export const getServerSideProps: GetServerSideProps = async () => {
     const res = await fetch("https://fakestoreapi.com/products?limit=4");
 
     if (!res.ok) {
-      throw new Error("API request failed");
+      console.log("API status:", res.status);
+      return { props: { products: [] } };
     }
 
     const products: Product[] = await res.json();
 
-    return { props: { products } };
+    return {
+      props: { products },
+    };
   } catch (error) {
     console.error("Fetch error:", error);
 
     return {
-      props: {
-        products: [],
-      },
+      props: { products: [] },
     };
   }
 };

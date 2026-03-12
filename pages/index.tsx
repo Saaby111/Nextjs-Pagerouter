@@ -22,30 +22,34 @@ export default function Home({ products }: Props) {
       </p>
 
       <h3 className="mt-5">Featured Products</h3>
-      <div className="row">
-        {products.map((p) => (
-          <div className="col-md-3" key={p.id}>
-            <div className="card mb-3">
-              <img
-                src={p.image}
-                alt={p.title}
-                className="card-img-top"
-                style={{ height: "150px", objectFit: "contain" }}
-              />
-              <div className="card-body">
-                <h6 className="card-title">{p.title.substring(0, 20)}...</h6>
-                <p>${p.price}</p>
-                <Link
-                  href={`/products/${p.id}`}
-                  className="btn btn-sm btn-primary"
-                >
-                  View
-                </Link>
+      {products.length === 0 ? (
+        <p className="text-center">No products available at the moment.</p>
+      ) : (
+        <div className="row">
+          {products.map((p) => (
+            <div className="col-md-3" key={p.id}>
+              <div className="card mb-3">
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  className="card-img-top"
+                  style={{ height: "150px", objectFit: "contain" }}
+                />
+                <div className="card-body">
+                  <h6 className="card-title">{p.title.substring(0, 20)}...</h6>
+                  <p>${p.price}</p>
+                  <Link
+                    href={`/products/${p.id}`}
+                    className="btn btn-sm btn-primary"
+                  >
+                    View
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <div className="text-center mt-4">
         <Link href="/products" className="btn btn-success">
@@ -57,7 +61,20 @@ export default function Home({ products }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const res = await fetch("https://fakestoreapi.com/products?limit=4");
-  const products = await res.ok ? await res.json() : [];
-  return { props: { products } };
+  try {
+    const res = await fetch("https://fakestoreapi.com/products?limit=4");
+
+    // Check if response is OK and JSON
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Failed to fetch products, API returned:", text);
+      return { props: { products: [] } };
+    }
+
+    const products: Product[] = await res.json();
+    return { props: { products } };
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    return { props: { products: [] } };
+  }
 };

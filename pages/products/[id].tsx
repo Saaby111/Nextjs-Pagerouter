@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import Layout from "../../components/Layout";
-import { GetServerSideProps } from "next";
 import { useCart } from "../../context/CartContext";
 
 interface Product {
@@ -10,13 +11,24 @@ interface Product {
   image: string;
 }
 
-interface Props {
-  product: Product;
-}
-
-export default function ProductDetail({ product }: Props) {
+export default function ProductDetail() {
+  const router = useRouter();
+  const { id } = router.query;
   const { addToCart } = useCart();
 
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    fetch(`https://fakestoreapi.com/products/${id}`)
+      .then((res) => res.json())
+      .then((data) => setProduct(data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <Layout><p>Loading product...</p></Layout>;
   if (!product) return <Layout><p>Product not found</p></Layout>;
 
   return (
@@ -36,12 +48,14 @@ export default function ProductDetail({ product }: Props) {
           <p><strong>Price:</strong> ${product.price}</p>
           <button
             className="btn btn-success"
-            onClick={() => addToCart({
-              id: product.id,
-              name: product.title,
-              price: product.price,
-              description: product.description,
-            })}
+            onClick={() =>
+              addToCart({
+                id: product.id,
+                name: product.title,
+                price: product.price,
+                description: product.description,
+              })
+            }
           >
             Add to Cart
           </button>
@@ -50,24 +64,3 @@ export default function ProductDetail({ product }: Props) {
     </Layout>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { id } = context.params as { id: string };
-  
-  try {
-    const res = await fetch(`https://fakestoreapi.com/products/${id}`);
-    
-    // Check if the response is OK
-    if (!res.ok) {
-      console.error(`Failed to fetch product ${id}: ${res.statusText}`);
-      return { notFound: true };
-    }
-
-    const product: Product = await res.json();
-    return { props: { product } };
-
-  } catch (err) {
-    console.error("Error fetching product:", err);
-    return { notFound: true };
-  }
-};

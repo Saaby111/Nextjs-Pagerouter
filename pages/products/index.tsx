@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import Link from "next/link";
-import { GetServerSideProps } from "next";
 
 interface Product {
   id: number;
@@ -9,16 +9,25 @@ interface Product {
   image: string;
 }
 
-interface Props {
-  products: Product[];
-}
+export default function ProductList() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default function ProductList({ products }: Props) {
+  useEffect(() => {
+    fetch("https://fakestoreapi.com/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <Layout>
       <h2>Products</h2>
-      {products.length === 0 ? (
-        <p>No products available at the moment.</p>
+      {loading ? (
+        <p>Loading products...</p>
+      ) : products.length === 0 ? (
+        <p>No products available.</p>
       ) : (
         <div className="row">
           {products.map((p) => (
@@ -45,22 +54,3 @@ export default function ProductList({ products }: Props) {
     </Layout>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://${req.headers.host}`;
-    const res = await fetch(`${baseUrl}/api/products`);
-
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("Failed to fetch products via API route:", text);
-      return { props: { products: [] } };
-    }
-
-    const products: Product[] = await res.json();
-    return { props: { products } };
-  } catch (err) {
-    console.error("Error fetching products:", err);
-    return { props: { products: [] } };
-  }
-};

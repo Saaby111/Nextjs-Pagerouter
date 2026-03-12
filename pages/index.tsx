@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import Link from "next/link";
-import { GetServerSideProps } from "next";
 
 interface Product {
   id: number;
@@ -9,21 +9,28 @@ interface Product {
   image: string;
 }
 
-interface Props {
-  products: Product[];
-}
+export default function Home() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default function Home({ products }: Props) {
+  useEffect(() => {
+    fetch("https://fakestoreapi.com/products?limit=4")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <Layout>
       <h1 className="text-center mb-4">Welcome to MyShop 🛒</h1>
-      <p className="text-center">
-        Best place to buy amazing products at great prices!
-      </p>
+      <p className="text-center">Best place to buy amazing products at great prices!</p>
 
       <h3 className="mt-5">Featured Products</h3>
-      {products.length === 0 ? (
-        <p className="text-center">No products available at the moment.</p>
+      {loading ? (
+        <p className="text-center">Loading products...</p>
+      ) : products.length === 0 ? (
+        <p className="text-center">No products available.</p>
       ) : (
         <div className="row">
           {products.map((p) => (
@@ -38,10 +45,7 @@ export default function Home({ products }: Props) {
                 <div className="card-body">
                   <h6 className="card-title">{p.title.substring(0, 20)}...</h6>
                   <p>${p.price}</p>
-                  <Link
-                    href={`/products/${p.id}`}
-                    className="btn btn-sm btn-primary"
-                  >
+                  <Link href={`/products/${p.id}`} className="btn btn-sm btn-primary">
                     View
                   </Link>
                 </div>
@@ -52,30 +56,8 @@ export default function Home({ products }: Props) {
       )}
 
       <div className="text-center mt-4">
-        <Link href="/products" className="btn btn-success">
-          View All Products
-        </Link>
+        <Link href="/products" className="btn btn-success">View All Products</Link>
       </div>
     </Layout>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  try {
-    // Use relative URL to your API route
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://${req.headers.host}`;
-    const res = await fetch(`${baseUrl}/api/products?limit=4`);
-
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("Failed to fetch products via API route:", text);
-      return { props: { products: [] } };
-    }
-
-    const products: Product[] = await res.json();
-    return { props: { products } };
-  } catch (err) {
-    console.error("Error fetching products:", err);
-    return { props: { products: [] } };
-  }
-};

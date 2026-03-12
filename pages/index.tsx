@@ -60,14 +60,15 @@ export default function Home({ products }: Props) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   try {
-    const res = await fetch("https://fakestoreapi.com/products?limit=4");
+    // Use relative URL to your API route
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://${req.headers.host}`;
+    const res = await fetch(`${baseUrl}/api/products?limit=4`);
 
-    // Check if response is OK and JSON
     if (!res.ok) {
       const text = await res.text();
-      console.error("Failed to fetch products, API returned:", text);
+      console.error("Failed to fetch products via API route:", text);
       return { props: { products: [] } };
     }
 

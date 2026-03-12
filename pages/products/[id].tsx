@@ -53,8 +53,21 @@ export default function ProductDetail({ product }: Props) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.params as { id: string };
-  const res = await fetch(`https://fakestoreapi.com/products/${id}`);
-  const product: Product = await res.json();
+  
+  try {
+    const res = await fetch(`https://fakestoreapi.com/products/${id}`);
+    
+    // Check if the response is OK
+    if (!res.ok) {
+      console.error(`Failed to fetch product ${id}: ${res.statusText}`);
+      return { notFound: true };
+    }
 
-  return { props: { product } };
+    const product: Product = await res.json();
+    return { props: { product } };
+
+  } catch (err) {
+    console.error("Error fetching product:", err);
+    return { notFound: true };
+  }
 };

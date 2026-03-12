@@ -43,8 +43,19 @@ export default function ProductList({ products }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const res = await fetch("https://fakestoreapi.com/products");
-  const products: Product[] = await res.json();
+  try {
+    const res = await fetch("https://fakestoreapi.com/products");
 
-  return { props: { products } };
+    if (!res.ok) {
+      console.error(`Failed to fetch products: ${res.statusText}`);
+      return { props: { products: [] } };
+    }
+
+    const products: Product[] = await res.json();
+    return { props: { products } };
+
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    return { props: { products: [] } };
+  }
 };
